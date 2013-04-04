@@ -1,3 +1,10 @@
+// DynamicQuery
+// ------------
+// This class is useful for creating dynamic SOQL queries.
+// -------------------------------------------------------
+// Nathan Wallace      04/02/2013  Create
+// 
+
 public class DynamicQuery {
 
 	/* ~ Instance Variables ~ */
@@ -14,6 +21,13 @@ public class DynamicQuery {
 
 	/* ~ Instance Methods ~ */
 
+	/**
+	 * Constructs a DynamicQuery object for querying the given database table.
+	 * 
+	 * @param  table  a string that must exactly match the name of the database table for querying
+	 * @return the constructed DynamicQuery object
+	 * @throws DynamicQuery.MalformattedQueryException if table is an empty string
+	 */
 	public DynamicQuery(String table) {
 		if (String.isEmpty(table)) throw new MalformattedQueryException('Table name cannot be blank');
 		table = table;
@@ -22,6 +36,12 @@ public class DynamicQuery {
 		orders = new List<String>();
 	}
 
+	/**
+	 * Executes the query against the database.
+	 *
+	 * @return List<sObject> returned by the database for the query
+	 * @throws DynamicQuery.MalformattedQueryException if anything goes wrong with the query
+	 */
 	public List<sObject> execute() {
 		String query = generateQuery();
 		System.debug('DynamicQuery generated query: ' + query);
@@ -32,6 +52,12 @@ public class DynamicQuery {
 		}
 	}
 
+	/**
+	 * Add fields for selection to the query.
+	 *
+	 * @param  selector  string that will be interpolated into the SELECT clause of the query, comma separated from other selectors
+	 * @return this DynamicQuery instance
+	 */
 	public DynamicQuery sel(String selector) {
 		selectors.add(selector);
 		return this;
@@ -41,6 +67,12 @@ public class DynamicQuery {
 		return this;
 	}
 
+	/**
+	 * Add where clauses to the query.
+	 *
+	 * @param  whereClause  string that will be interpolated into the WHERE clause of the query, AND-ed with other where clauses
+	 * @return this DynamicQuery instance
+	 */
 	public DynamicQuery whr(String whereClause) {
 		wheres.add(whereClause);
 		return this;
@@ -50,6 +82,12 @@ public class DynamicQuery {
 		return this;
 	}
 
+	/**
+	 * Add with clauses to the query.
+	 *
+	 * @param  withClause  string that will be interpolated into the WITH clause of the query, AND-ed with other with clauses
+	 * @return this DynamicQuery instance
+	 */
 	public DynamicQuery wth(String withClause) {
 		withs.add(withClause);
 		return this;
@@ -59,6 +97,12 @@ public class DynamicQuery {
 		return this;
 	}
 
+	/**
+	 * Add group by clauses to the query.
+	 *
+	 * @param  groupClause  string that will be interpolated into the GROUP BY clause of the query, comma separated with other group clauses
+	 * @return this DynamicQuery instance
+	 */
 	public DynamicQuery grp(String groupClause) {
 		groups.add(groupClause);
 		return this;
@@ -68,6 +112,12 @@ public class DynamicQuery {
 		return this;
 	}
 
+	/**
+	 * Add having clauses to the query.
+	 *
+	 * @param  havingClause  string that will be interpolated into the HAVING clause of the query, AND-ed with other having clauses
+	 * @return this DynamicQuery instance
+	 */
 	public DynamicQuery hvg(String havingClause) {
 		havings.add(havingClause);
 		return this;
@@ -77,16 +127,33 @@ public class DynamicQuery {
 		return this;
 	}
 
+	/**
+	 * Add a limit clause to the query. Destructively replaces any previously assigned limit.
+	 *
+	 * @param  recordsLimit  integer that will be interpolated into the LIMIT clause of the query
+	 * @return this DynamicQuery instance
+	 */
 	public DynamicQuery lim(Integer recordsLimit) {
 		limits = recordsLimit;
 		return this;
 	}
 
+	/**
+	 * Add an offset clause to the query. Destructively replaces any previously assigned offset.
+	 *
+	 * @param  recordsOffset  integer that will be interpolated into the OFFSET clause of the query
+	 * @return this DynamicQuery instance
+	 */
 	public DynamicQuery off(Integer recordsOffset) {
 		offsets = recordsOffset;
 		return this;
 	}
 
+	/**
+	 * Interpolate the existing clauses into a single string representing the database query.
+	 *
+	 * @return a string representing the combined database query
+	 */
 	private String generateQuery() {
 		String query = 'SELECT ' + join(selectors,',') + ' FROM ' + table;
 		if (!wheres.isEmpty())  query += ' WHERE ('   + join(wheres, ') AND (') + ')';
@@ -102,6 +169,14 @@ public class DynamicQuery {
 	class MalformattedQueryException extends Exception {}
 
 	/* ~ Helpers ~ */
+
+	/**
+	 * Join a list of strings together with a specified separator between them
+	 *
+	 * @param   strList     strings to join together
+	 * @param   joiningStr  string with which to separate the strings in the list
+	 * @return  result of concatenating the strings in the given list with separators between
+	 */
 	private static String join(List<String> strList, String joiningStr) {
 		String returnString = '';
 		if (strList != null) {
