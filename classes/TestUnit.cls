@@ -1,3 +1,12 @@
+// TestUnit
+// --------
+// Provides wrappers around System.assert to provide sensible
+// error messages by default to ease the process of debugging
+// and writing unit tests.
+// -------------------------------------------------------
+// Nathan Wallace      04/02/2013  Create
+// 
+
 public class TestUnit {
 
 	/* ~ Test methods ~ */
