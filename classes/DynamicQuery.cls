@@ -2,7 +2,6 @@
 // ------------
 // This class is useful for creating dynamic SOQL queries.
 // -------------------------------------------------------
-// Nathan Wallace      04/02/2013  Create
 // 
 
 public class DynamicQuery {
@@ -18,6 +17,7 @@ public class DynamicQuery {
 	                 orders;
 	private Integer  limits,
 	                 offsets;
+	private List<List<Object>> ins;
 
 	/* ~ Instance Methods ~ */
 
@@ -92,6 +92,15 @@ public class DynamicQuery {
 	 * @param  collection  collection to be referred to in a WHERE-IN clause
 	 * @return this DynamicQuery instance
 	 */
+	/*public DynamicQuery whrin(String field, List<Object> collection) {
+	 	if (ins == null) ins = new List<List<Object>>();
+	 	ins.add(collection);
+		wheres.add(field + ' IN :ins.get(' + (ins.size() - 1) + ')');
+		return this;
+	}
+	public DynamicQuery whrin(String field, Set<Object> collection) {
+		return this.whrin(field, new List<Object>(collection));
+	}*/
 	public DynamicQuery whrin(String field, List<Object> collection) {
 		List<String> strCollection = new List<String>();
 		for (Object o : collection) strCollection.add(String.valueOf(o));

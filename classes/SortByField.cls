@@ -1,13 +1,22 @@
+// SortByField
+// -----------
+// Useless* yet interesting class which dynamically sorts
+// a given list of sObjects by a specified field
+// 
+//       *in reality, probably better to use SOQL ORDER BY
+// -------------------------------------------------------
+// 
+
 public class SortByField {
 
 	public class SortingException extends Exception {}
 
 	private enum SortType {STRING_TYPE, NUM_TYPE, TIME_TYPE}
 
-	/*
-	Destructively sorts a list of sObjects, sorted by the value of the specified field
-	Throws: SortingException
-	*/
+	/**
+	 * Destructively sorts a list of sObjects, sorted by the value of the specified field
+	 * Throws: SortingException
+	 */
 	public static void sortByField(List<sObject> objs, String fieldName) {
 		if (objs.size() < 2) return;
 		Schema.sObjectField field = objs.getsObjectType().getDescribe().fields.getMap().get(fieldName);
@@ -40,7 +49,9 @@ public class SortByField {
 			throw new SortingException('Type not sortable: ' + type);
 		}
 	}
-	/* Implements quicksort on the list of sObjects given */
+	/**
+	 * Implements quicksort on the list of sObjects given
+	 */
 	private static void quicksortByField(List<sObject> a, Integer lo0, Integer hi0, Schema.sObjectField field, SortType type) {
 		Integer lo = lo0;
 		Integer hi = hi0;
@@ -71,7 +82,9 @@ public class SortByField {
 		quicksortByField(a, lo0, lo-1, field, type);
 		quicksortByField(a, hi+1, hi0, field, type);
 	}
-	/* Determines the type of primitive the field represents, then returns the appropriate comparison */
+	/**
+	 * Determines the type of primitive the field represents, then returns the appropriate comparison
+	 */
 	private static Integer compareFields(sObject a, sObject b, Schema.sObjectField field, SortType type) {
 		if (type == SortType.STRING_TYPE) {
 			// compareTo method does the same thing as the compare methods defined below for Numbers and Time

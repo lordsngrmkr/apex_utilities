@@ -1,4 +1,12 @@
+// StringHelpers
+// -------------
+// A collection of miscellaneous helper methods for Strings
+// --------------------------------------------------------
+//
+
 public class StringHelpers {
+
+	/* ~ Lorem Ipsum ~ */
 
 	public static final String loremSentence = 'Lorem ipsum dolor sit amet, mei detracto pericula an, tation alterum cu vim.';
 	public static final String loremParagraph = 'Lorem ipsum dolor sit amet, mei detracto pericula an, tation alterum cu vim. ' +
@@ -6,10 +14,12 @@ public class StringHelpers {
 		'platonem id, expetendis definitionem ei sit, mea ne cibo gloriatur persequeris. Ex purto unum eos, ' +
 		'an mazim blandit quo. Ad prima dicant labores eos, at case ullamcorper mel, detracto nominavi cum eu.';
 
-	/*
-		Transforms a List of Strings into a single String separated by a specified
-		joining String.
-	*/
+	/* ~ Join ~ */
+
+	/**
+	 * Transforms a List of Strings into a single String separated by a specified
+	 * joining String.
+	 */
 	public static String join(List<String> strList, String joiningStr) {
 		Iterator<String> it = strList.iterator();
 		String returnString = '';
@@ -22,15 +32,17 @@ public class StringHelpers {
 		return returnString;
 	}
 
+	/* ~ Pluralize ~ */
+
 	private static final Map<String,String> abnormalPlurals = new Map<String,String> {
 		'person' => 'people',
 		'Person' => 'People'
 	};
-	/*
-		Takes a string and pluralizes that string if the count integer is not 1.
-		Uses map abnormalPlurals to define abnormal pluralizations.  Otherwise
-		just adds an 's'.
-	*/
+	/**
+	 * Takes a string and pluralizes that string if the count integer is not 1.
+	 * Uses map abnormalPlurals to define abnormal pluralizations.  Otherwise
+	 * just adds an 's'.
+	 */
 	public static String pluralize(String str, Integer count) {
 		String ret = str;
 		if (count != 1) {
@@ -46,19 +58,21 @@ public class StringHelpers {
 		}
 		return ret;
 	}
+	
+	/* ~ Cleaning ~ */
 
-	/*
-		Takes a string and removes any non-alpha-numeric characters.
-		Useful for validating Id parameters from URLs.
-	*/
+	/**
+	 * Takes a string and removes any non-alpha-numeric characters.
+	 * Useful for validating Id parameters from URLs.
+	 */
 	public static String cleanAlphaNum(String str) {
 		return str.replaceAll('[^a-zA-Z0-9]','');
 	}
 
-	/*
-		Takes a list of strings and removes any string that is only whitespace.
-		Note: Does not trim whitespace off of non-blank strings.
-	*/
+	/**
+	 * Takes a list of strings and removes any string that is only whitespace.
+	 * Note: Does not trim whitespace off of non-blank strings.
+	 */
 	public static List<String> removeBlankStrings(List<String> strs) {
 		List<String> ret = new List<String>();
 		for (String s : strs) {
@@ -110,4 +124,3 @@ public class StringHelpers {
 		Test.stopTest();
 	}
 }
-
