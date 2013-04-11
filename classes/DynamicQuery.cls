@@ -30,10 +30,13 @@ public class DynamicQuery {
 	 */
 	public DynamicQuery(String table) {
 		if (String.isEmpty(table)) throw new MalformattedQueryException('Table name cannot be blank');
-		table = table;
+		this.table = table;
 		selectors = new List<String>();
-		wheres = new List<String>();
-		orders = new List<String>();
+		withs     = new List<String>();
+		wheres    = new List<String>();
+		groups    = new List<String>();
+		havings   = new List<String>();
+		orders    = new List<String>();
 	}
 
 	/**
@@ -80,6 +83,30 @@ public class DynamicQuery {
 	public DynamicQuery whr(List<String> whereClauses) {
 		wheres.addAll(whereClauses);
 		return this;
+	}
+
+	/**
+	 * Add where-in clauses to the query.
+	 *
+	 * @param  field       string representing the field that will be interpolated into the WHERE clause of the query, AND-ed with other where clauses
+	 * @param  collection  collection to be referred to in a WHERE-IN clause
+	 * @return this DynamicQuery instance
+	 */
+	public DynamicQuery whrin(String field, List<Object> collection) {
+		List<String> strCollection = new List<String>();
+		for (Object o : collection) strCollection.add(String.valueOf(o));
+		wheres.add(field + ' IN (' + join(strCollection,',') + ')');
+		return this;
+	}
+	public DynamicQuery whrin(String field, Set<Object> collection) {
+		return this.whrin(field, new List<Object>(collection));
+	}
+	public DynamicQuery whrin(String field, List<String> collection) {
+		wheres.add(field + ' IN (\'' + join(collection,'\',\'') + '\')');
+		return this;
+	}
+	public DynamicQuery whrin(String field, Set<String> collection) {
+		return this.whrin(field, new List<String>(collection));
 	}
 
 	/**
@@ -156,10 +183,10 @@ public class DynamicQuery {
 	 */
 	private String generateQuery() {
 		String query = 'SELECT ' + join(selectors,',') + ' FROM ' + table;
-		if (!wheres.isEmpty())  query += ' WHERE ('   + join(wheres, ') AND (') + ')';
-		if (!withs.isEmpty())   query += ' WITH ('    + join(withs,  ') AND (') + ')';
+		if (!wheres.isEmpty())  query += ' WHERE '    + join(wheres, ' AND ');
+		if (!withs.isEmpty())   query += ' WITH '     + join(withs,  ' AND ');
 		if (!groups.isEmpty())  query += ' GROUP BY ' + join(groups, ',');
-		if (!havings.isEmpty()) query += ' HAVING ('  + join(havings,') AND (') + ')';
+		if (!havings.isEmpty()) query += ' HAVING '   + join(havings,' AND ');
 		if (!orders.isEmpty())  query += ' ORDER BY ' + join(orders, ' THEN ');
 		if (limits  != null)    query += ' LIMIT '    + limits;
 		if (offsets != null)    query += ' OFFSET '   + offsets;
