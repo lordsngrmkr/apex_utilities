@@ -94,7 +94,7 @@ public class DynamicQuery {
   public DynamicQuery whrin(String field, List<Object> collection) {
     List<String> strCollection = new List<String>();
     for (Object o : collection) strCollection.add(String.valueOf(o));
-    wheres.add(field + ' IN (' + join(strCollection,',') + ')');
+    wheres.add(field + ' IN (' + String.join(strCollection,',') + ')');
     return this;
   }
   public DynamicQuery whrin(String field, Set<Object> collection) {
@@ -102,7 +102,7 @@ public class DynamicQuery {
   }
   // TODO whrin with set<obj> does not typecast correctly -- must overload for each supported type of set
   public DynamicQuery whrin(String field, List<String> collection) {
-    wheres.add(field + ' IN (\'' + join(collection,'\',\'') + '\')');
+    wheres.add(field + ' IN (\'' + String.join(collection,'\',\'') + '\')');
     return this;
   }
   public DynamicQuery whrin(String field, Set<String> collection) {
@@ -183,41 +183,18 @@ public class DynamicQuery {
    * @return a string representing the combined database query
    */
   private String generateQuery() {
-    String query = 'SELECT ' + join(selections,',') + ' FROM ' + table;
-    if (!wheres.isEmpty())  query += ' WHERE ('    + join(wheres, ') AND (') + ')';
-    if (!withs.isEmpty())   query += ' WITH ('     + join(withs,  ') AND (') + ')';
-    if (!groups.isEmpty())  query += ' GROUP BY '  + join(groups, ',');
-    if (!havings.isEmpty()) query += ' HAVING ('   + join(havings,') AND (') + ')';
-    if (!orders.isEmpty())  query += ' ORDER BY '  + join(orders, ' THEN ');
+    String query = 'SELECT ' + String.join(selections,',') + ' FROM ' + table;
+    if (!wheres.isEmpty())  query += ' WHERE ('    + String.join(wheres, ') AND (') + ')';
+    if (!withs.isEmpty())   query += ' WITH ('     + String.join(withs,  ') AND (') + ')';
+    if (!groups.isEmpty())  query += ' GROUP BY '  + String.join(groups, ',');
+    if (!havings.isEmpty()) query += ' HAVING ('   + String.join(havings,') AND (') + ')';
+    if (!orders.isEmpty())  query += ' ORDER BY '  + String.join(orders, ',');
     if (limits  != null)    query += ' LIMIT '     + limits;
     if (offsets != null)    query += ' OFFSET '    + offsets;
     return query;
   }
 
   class MalformattedQueryException extends Exception {}
-
-  /* ~ Helpers ~ */
-
-  /**
-   * Join a list of strings together with a specified separator between them
-   *
-   * @param   strList     strings to join together
-   * @param   joiningStr  string with which to separate the strings in the list
-   * @return  result of concatenating the strings in the given list with separators between
-   */
-  private static String join(List<String> strList, String joiningStr) {
-    String returnString = '';
-    if (strList != null) {
-      Iterator<String> it = strList.iterator();
-      while (it.hasNext()) {
-        returnString += it.next();
-        if (it.hasNext()) {
-          returnString += joiningStr;
-        }
-      }
-    }
-    return returnString;
-  }
 
   /* ~ Unit Tests ~ */
 
