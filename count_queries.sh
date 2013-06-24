@@ -26,10 +26,10 @@ function main {
   echo "`get_lines_with_counts "$queries"`" | sort -r |
   while read line; do
     greppable_line="`make_greppable "$line"`"
-    file="`grep -lir "$greppable_line" $2 $3 --exclude-dir=$2/.svn --exclude-dir=$3/.svn`"
+    file="`grep -lir "$greppable_line" $2/classes $2/triggers --exclude-dir=$2/classes/.svn --exclude-dir=$2/triggers/.svn`"
     echo "$line"
     echo "$file" | sed "s/.*\///" | sed "s/^/  /"
   done
 }
 
-main $1 $2 $3
+main $1 $2
