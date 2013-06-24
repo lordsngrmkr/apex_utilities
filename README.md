@@ -41,8 +41,9 @@ distinct SOQL query in the log executes, and then attempt to locate the
 file where that query is found.  Useful for debugging governor limit
 errors.
 
-    Usage:
-		```bash
-		./count_queries.sh [debug log file] [path to src directory]
-		```
+Usage:
+
+```bash
+./count_queries.sh [debug log file] [path to src directory]
+```
 
