@@ -7,7 +7,13 @@ DynamicQuery *
 --------------
 
 Class that simplifies incrementally building dynamic SOQL queries.
- * Still in development
+
+Example Usage:
+
+```java
+List<User> users = new DynamicQuery('User').sel('ProfileId').whr('Name LIKE \'Nathan%\').lim(1).execute();
+```
+
 
 TestUnit
 --------
