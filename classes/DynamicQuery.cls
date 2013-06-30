@@ -80,9 +80,9 @@ public class DynamicQuery {
     this.selections.addAll(selections);
     return this;
   }
-	public DynamicQuery sel(Set<String> selections) {
-		return sel(new List<String>(selections));
-	}
+  public DynamicQuery sel(Set<String> selections) {
+    return sel(new List<String>(selections));
+  }
 
   /**
    * Add where clauses to the query.
@@ -177,13 +177,13 @@ public class DynamicQuery {
    * @return this DynamicQuery instance
    */
   public DynamicQuery ord(String orderClause) {
-		orders.add(orderClause);
+    orders.add(orderClause);
     return this;
   }
-	public DynamicQuery ord(List<String> orderClauses) {
-		orders.addAll(orderClauses);
-		return this;
-	}
+  public DynamicQuery ord(List<String> orderClauses) {
+    orders.addAll(orderClauses);
+    return this;
+  }
 
   /**
    * Add a limit clause to the query. Destructively replaces any previously assigned limit.
@@ -214,8 +214,8 @@ public class DynamicQuery {
    */
   private String generateQuery() {
     String query = 'SELECT ';
-		query += selections.isEmpty() ? 'Id' : String.join(selections,',');
-		query += ' FROM ' + table;
+    query += selections.isEmpty() ? 'Id' : String.join(selections,',');
+    query += ' FROM ' + table;
     if (!wheres.isEmpty())  query += ' WHERE ('    + String.join(wheres, ') AND (') + ')';
     if (!withs.isEmpty())   query += ' WITH ('     + String.join(withs,  ') AND (') + ')';
     if (!groups.isEmpty())  query += ' GROUP BY '  + String.join(groups, ',');
