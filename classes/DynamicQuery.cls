@@ -1,8 +1,20 @@
 // DynamicQuery
 // ------------
+//
 // This class is useful for creating dynamic SOQL queries.
-// -------------------------------------------------------
+// Queries are built piece by piece via methods named after the SOQL
+// clauses they build. Clauses may be added to the query in any order.
+// Use the 'execute' method to run the query, once it's built.
+// All query-building methods return 'this' so they are chainable.
+//
+// Example usage:
+// List<User> users =
+//   new DynamicQuery('User').sel('Id').whr('Name LIKE \'Nathan%\'').execute();
 // 
+// ------------------------------------------------------------------
+//  Author          Date        Description
+// ------------------------------------------------------------------
+//  Nathan Wallace  06/29/2013  Create
 
 public class DynamicQuery {
 
@@ -68,6 +80,9 @@ public class DynamicQuery {
     this.selections.addAll(selections);
     return this;
   }
+	public DynamicQuery sel(Set<String> selections) {
+		return sel(new List<String>(selections));
+	}
 
   /**
    * Add where clauses to the query.
@@ -100,7 +115,6 @@ public class DynamicQuery {
   public DynamicQuery whrin(String field, Set<Object> collection) {
     return this.whrin(field, new List<Object>(collection));
   }
-  // TODO whrin with set<obj> does not typecast correctly -- must overload for each supported type of set
   public DynamicQuery whrin(String field, List<String> collection) {
     wheres.add(field + ' IN (\'' + String.join(collection,'\',\'') + '\')');
     return this;
@@ -108,6 +122,7 @@ public class DynamicQuery {
   public DynamicQuery whrin(String field, Set<String> collection) {
     return this.whrin(field, new List<String>(collection));
   }
+  // TODO whrin with set<obj> does not typecast correctly -- must overload for each supported type of set
   // TODO overload this method for Date objects (don't get treated correctly when casted to Object then String)
 
   /**
@@ -156,6 +171,21 @@ public class DynamicQuery {
   }
 
   /**
+   * Add a order clauses to the query.
+   *
+   * @param  orderClause string to insert after 'ORDER BY' in the query; should be field or fields list with optional sort direction
+   * @return this DynamicQuery instance
+   */
+  public DynamicQuery ord(String orderClause) {
+		orders.add(orderClause);
+    return this;
+  }
+	public DynamicQuery ord(List<String> orderClauses) {
+		orders.addAll(orderClauses);
+		return this;
+	}
+
+  /**
    * Add a limit clause to the query. Destructively replaces any previously assigned limit.
    *
    * @param  recordsLimit  integer that will be interpolated into the LIMIT clause of the query
@@ -183,7 +213,9 @@ public class DynamicQuery {
    * @return a string representing the combined database query
    */
   private String generateQuery() {
-    String query = 'SELECT ' + String.join(selections,',') + ' FROM ' + table;
+    String query = 'SELECT ';
+		query += selections.isEmpty() ? 'Id' : String.join(selections,',');
+		query += ' FROM ' + table;
     if (!wheres.isEmpty())  query += ' WHERE ('    + String.join(wheres, ') AND (') + ')';
     if (!withs.isEmpty())   query += ' WITH ('     + String.join(withs,  ') AND (') + ')';
     if (!groups.isEmpty())  query += ' GROUP BY '  + String.join(groups, ',');
@@ -318,10 +350,9 @@ public class DynamicQuery {
     } catch (MalformattedQueryException e) {} // pass!
   }
 
-  @isTest static void testSelectionsRequired() {
-    try {
-      List<Profile> ps = new DynamicQuery('Profile').execute();
-      System.assert(false, 'Expected to throw MalformattedQueryException, but saw none');
-    } catch (MalformattedQueryException e) {} // pass!
+  @isTest static void testSelectionsDefaultToIdIfNotPresent() {
+    DynamicQuery q = new DynamicQuery('table');
+    String result = q.generateQuery().substringBetween('SELECT ', ' FROM');
+    System.assert(result.contains('Id'));
   }
 }
