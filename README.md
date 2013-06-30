@@ -3,8 +3,8 @@ Apex Utilities
 
 An assortment of useful helper utilites for Apex development
 
-DynamicQuery *
---------------
+DynamicQuery
+------------
 
 Class that simplifies incrementally building dynamic SOQL queries.
 
