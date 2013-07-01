@@ -35,7 +35,7 @@ public class DynamicQuery {
   /**
    * Constructs a DynamicQuery object for querying the given database table.
    * 
-   * @param  table  a string that must exactly match the name of the database table for querying
+   * @param table a string that must exactly match the name of the database table for querying
    * @return the constructed DynamicQuery object
    * @throws DynamicQuery.MalformattedQueryException if table is an empty string
    */
@@ -69,7 +69,7 @@ public class DynamicQuery {
   /**
    * Add fields for selection to the query.
    *
-   * @param  selector  string that will be interpolated into the SELECT clause of the query, comma separated from other selections
+   * @param selector string that will be interpolated into the SELECT clause of the query, comma separated from other selections
    * @return this DynamicQuery instance
    */
   public DynamicQuery sel(String selection) {
@@ -83,11 +83,14 @@ public class DynamicQuery {
   public DynamicQuery sel(Set<String> selections) {
     return sel(new List<String>(selections));
   }
+  public DynamicQuery sel(DynamicQuery other) {
+    return this.sel('(' + other.generateQuery() + ')');
+  }
 
   /**
    * Add where clauses to the query.
    *
-   * @param  whereClause  string that will be interpolated into the WHERE clause of the query, AND-ed with other where clauses
+   * @param whereClause string that will be interpolated into the WHERE clause of the query, AND-ed with other where clauses
    * @return this DynamicQuery instance
    */
   public DynamicQuery whr(String whereClause) {
@@ -102,8 +105,8 @@ public class DynamicQuery {
   /**
    * Add where-in clauses to the query.
    *
-   * @param  field       string representing the field that will be interpolated into the WHERE clause of the query, AND-ed with other where clauses
-   * @param  collection  collection to be referred to in a WHERE-IN clause
+   * @param field string representing the field that will be interpolated into the WHERE clause of the query, AND-ed with other where clauses
+   * @param collection collection to be referred to in a WHERE-IN clause
    * @return this DynamicQuery instance
    */
   public DynamicQuery whrin(String field, List<Object> collection) {
@@ -122,13 +125,37 @@ public class DynamicQuery {
   public DynamicQuery whrin(String field, Set<String> collection) {
     return this.whrin(field, new List<String>(collection));
   }
+  public DynamicQuery whrin(String field, DynamicQuery other) {
+    wheres.add(field + ' IN (' + other.generateQuery() + ')');
+    return this;
+  }
+  public DynamicQuery whrnotin(String field, List<Object> collection) {
+    List<String> strCollection = new List<String>();
+    for (Object o : collection) strCollection.add(String.valueOf(o));
+    wheres.add(field + ' NOT IN (' + String.join(strCollection,',') + ')');
+    return this;
+  }
+  public DynamicQuery whrnotin(String field, Set<Object> collection) {
+    return this.whrnotin(field, new List<Object>(collection));
+  }
+  public DynamicQuery whrnotin(String field, List<String> collection) {
+    wheres.add(field + ' NOT IN (\'' + String.join(collection,'\',\'') + '\')');
+    return this;
+  }
+  public DynamicQuery whrnotin(String field, Set<String> collection) {
+    return this.whrnotin(field, new List<String>(collection));
+  }
+  public DynamicQuery whrnotin(String field, DynamicQuery other) {
+    wheres.add(field + ' NOT IN (' + other.generateQuery() + ')');
+    return this;
+  }
   // TODO whrin with set<obj> does not typecast correctly -- must overload for each supported type of set
   // TODO overload this method for Date objects (don't get treated correctly when casted to Object then String)
 
   /**
    * Add with clauses to the query.
    *
-   * @param  withClause  string that will be interpolated into the WITH clause of the query, AND-ed with other with clauses
+   * @param withClause string that will be interpolated into the WITH clause of the query, AND-ed with other with clauses
    * @return this DynamicQuery instance
    */
   public DynamicQuery wth(String withClause) {
@@ -143,7 +170,7 @@ public class DynamicQuery {
   /**
    * Add group by clauses to the query.
    *
-   * @param  groupClause  string that will be interpolated into the GROUP BY clause of the query, comma separated with other group clauses
+   * @param groupClause string that will be interpolated into the GROUP BY clause of the query, comma separated with other group clauses
    * @return this DynamicQuery instance
    */
   public DynamicQuery grp(String groupClause) {
@@ -158,7 +185,7 @@ public class DynamicQuery {
   /**
    * Add having clauses to the query.
    *
-   * @param  havingClause  string that will be interpolated into the HAVING clause of the query, AND-ed with other having clauses
+   * @param havingClause string that will be interpolated into the HAVING clause of the query, AND-ed with other having clauses
    * @return this DynamicQuery instance
    */
   public DynamicQuery hvg(String havingClause) {
@@ -173,7 +200,7 @@ public class DynamicQuery {
   /**
    * Add a order clauses to the query.
    *
-   * @param  orderClause string to insert after 'ORDER BY' in the query; should be field or fields list with optional sort direction
+   * @param orderClause string to insert after 'ORDER BY' in the query; should be field or fields list with optional sort direction
    * @return this DynamicQuery instance
    */
   public DynamicQuery ord(String orderClause) {
@@ -184,11 +211,14 @@ public class DynamicQuery {
     orders.addAll(orderClauses);
     return this;
   }
+  public DynamicQuery ord(Set<String> orderClauses) {
+    return ord(new List<String>(orderClauses));
+  }
 
   /**
    * Add a limit clause to the query. Destructively replaces any previously assigned limit.
    *
-   * @param  recordsLimit  integer that will be interpolated into the LIMIT clause of the query
+   * @param recordsLimit integer that will be interpolated into the LIMIT clause of the query
    * @return this DynamicQuery instance
    */
   public DynamicQuery lim(Integer recordsLimit) {
@@ -199,7 +229,7 @@ public class DynamicQuery {
   /**
    * Add an offset clause to the query. Destructively replaces any previously assigned offset.
    *
-   * @param  recordsOffset  integer that will be interpolated into the OFFSET clause of the query
+   * @param recordsOffset integer that will be interpolated into the OFFSET clause of the query
    * @return this DynamicQuery instance
    */
   public DynamicQuery off(Integer recordsOffset) {
@@ -212,23 +242,23 @@ public class DynamicQuery {
    *
    * @return a string representing the combined database query
    */
-  private String generateQuery() {
+  public String generateQuery() {
     String query = 'SELECT ';
     query += selections.isEmpty() ? 'Id' : String.join(selections,',');
     query += ' FROM ' + table;
-    if (!wheres.isEmpty())  query += ' WHERE ('    + String.join(wheres, ') AND (') + ')';
-    if (!withs.isEmpty())   query += ' WITH ('     + String.join(withs,  ') AND (') + ')';
-    if (!groups.isEmpty())  query += ' GROUP BY '  + String.join(groups, ',');
-    if (!havings.isEmpty()) query += ' HAVING ('   + String.join(havings,') AND (') + ')';
-    if (!orders.isEmpty())  query += ' ORDER BY '  + String.join(orders, ',');
-    if (limits  != null)    query += ' LIMIT '     + limits;
-    if (offsets != null)    query += ' OFFSET '    + offsets;
+    if (!wheres.isEmpty())  query += ' WHERE ('   + String.join(wheres, ') AND (') + ')';
+    if (!withs.isEmpty())   query += ' WITH ('    + String.join(withs,  ') AND (') + ')';
+    if (!groups.isEmpty())  query += ' GROUP BY ' + String.join(groups, ',');
+    if (!havings.isEmpty()) query += ' HAVING ('  + String.join(havings,') AND (') + ')';
+    if (!orders.isEmpty())  query += ' ORDER BY ' + String.join(orders, ',');
+    if (limits  != null)    query += ' LIMIT '    + limits;
+    if (offsets != null)    query += ' OFFSET '   + offsets;
     return query;
   }
 
-  class MalformattedQueryException extends Exception {}
+  public class MalformattedQueryException extends Exception {}
 
-  /* ~ Unit Tests ~ */
+	/* ~ Unit Tests ~ */
 
   @isTest static void testConstructor() {
     DynamicQuery q = new DynamicQuery('table');
@@ -246,7 +276,7 @@ public class DynamicQuery {
     List<String> fields = new List<String> {'field_a','field_b','field_c'};
     DynamicQuery q = new DynamicQuery('table').sel(fields);
     String result = q.generateQuery().substringBetween('SELECT ', ' FROM');
-    System.assert(result.contains('field_a'), q.generateQuery() + ', fields: ' + fields + ', selections: ' + q.selections);
+    System.assert(result.contains('field_a'), q.generateQuery());
     System.assert(result.contains('field_b'), q.generateQuery());
     System.assert(result.contains('field_c'), q.generateQuery());
   }
@@ -284,6 +314,27 @@ public class DynamicQuery {
     System.assert(result.contains('item_b'));
     System.assert(result.contains('item_c'));
     System.assert(!result.contains('\'item_\'')); // objects should not be quoted
+  }
+
+  @isTest static void testWhereNotInConstructionStrings() {
+    Set<String> collection = new Set<String> {'item_a', 'item_b', 'item_c'};
+    DynamicQuery q = new DynamicQuery('table').whrnotin('field', collection);
+    String result = q.generateQuery().substringAfter(' WHERE ');
+    System.assert(result.contains('field NOT IN ('), result);
+    System.assert(result.contains('\'item_a\''), result);
+    System.assert(result.contains('\'item_b\''), result);
+    System.assert(result.contains('\'item_c\''), result);
+  }
+
+  @isTest static void testWhereNotInConstructionObjects() {
+    Set<Object> collection = new Set<Object> {'item_a', 'item_b', 'item_c'};
+    DynamicQuery q = new DynamicQuery('table').whrnotin('field', collection);
+    String result = q.generateQuery().substringAfter(' WHERE ');
+    System.assert(result.contains('field NOT IN ('), result);
+    System.assert(result.contains('item_a'), result);
+    System.assert(result.contains('item_b'), result);
+    System.assert(result.contains('item_c'), result);
+    System.assert(!result.contains('\'item_\''), result); // objects should not be quoted
   }
 
   @isTest static void testWithConstruction() {
@@ -325,6 +376,22 @@ public class DynamicQuery {
     System.assert(result.contains(' HAVING (having_a) AND (having_b) AND (having_c)'));
   }
 
+  @isTest static void testOrderConstruction() {
+    String str = 'a';
+    DynamicQuery q = new DynamicQuery('table').ord(str);
+    String result = q.generateQuery();
+    System.assert(result.contains(' ORDER BY a'), result);
+  }
+
+  @isTest static void testOrderConstructionList() {
+    Set<String> orders = new Set<String>{ 'a','b','c' };
+    DynamicQuery q = new DynamicQuery('table').ord(orders);
+    String result = q.generateQuery().substringAfter(' ORDER BY ');
+    System.assert(result.contains('a'), result);
+    System.assert(result.contains('b'), result);
+    System.assert(result.contains('c'), result);
+  }
+
   @isTest static void testLimitConstruction() {
     DynamicQuery q = new DynamicQuery('table').lim(1);
     String result = q.generateQuery();
@@ -337,22 +404,50 @@ public class DynamicQuery {
     System.assert(result.contains(' OFFSET 10'));
   }
 
-  @isTest static void testExecute() {
+  @isTest static void testSelectionsDefaultToIdIfNotPresent() {
+    DynamicQuery q = new DynamicQuery('table');
+    String result = q.generateQuery().substringBetween('SELECT ', ' FROM');
+    System.assert(result.contains('Id'));
+  }
+
+  @isTest static void testLeftOuterJoin() {
+    DynamicQuery other = new DynamicQuery('related_objs__r');
+    DynamicQuery q = new DynamicQuery('table').sel(other);
+    String result = q.generateQuery();
+    System.assertEquals('SELECT (SELECT Id FROM related_objs__r) FROM table', result);
+  }
+
+  @isTest static void testLeftInnerJoin() {
+    DynamicQuery other = new DynamicQuery('related_obj__c');
+    DynamicQuery q = new DynamicQuery('table').whrin('field', other);
+    String result = q.generateQuery();
+    System.assertEquals('SELECT Id FROM table WHERE (field IN (SELECT Id FROM related_obj__c))', result);
+  }
+
+  @isTest static void testLeftInnerAntiJoin() {
+    DynamicQuery other = new DynamicQuery('related_obj__c');
+    DynamicQuery q = new DynamicQuery('table').whrnotin('field', other);
+    String result = q.generateQuery();
+    System.assertEquals('SELECT Id FROM table WHERE (field NOT IN (SELECT Id FROM related_obj__c))', result);
+  }
+
+  @isTest static void testBasicExecute() {
     Integer count = [SELECT count() FROM Profile];
-    List<Profile> result = new DynamicQuery('Profile').sel('Id').execute();
+    List<Profile> result = new DynamicQuery('Profile').execute();
     System.assert(result.size() == count);
+  }
+
+  @isTest static void testMalformattedExecute() {
+    try {
+      List<Profile> result = new DynamicQuery('Profile').sel('').execute();
+      System.assert(false, 'Expected to throw MalformattedQueryException, but saw none');
+    } catch (DynamicQuery.MalformattedQueryException e) {} // pass!
   }
 
   @isTest static void testTableRequired() {
     try {
       DynamicQuery q = new DynamicQuery('');
       System.assert(false, 'Expected to throw MalformattedQueryException, but saw none');
-    } catch (MalformattedQueryException e) {} // pass!
-  }
-
-  @isTest static void testSelectionsDefaultToIdIfNotPresent() {
-    DynamicQuery q = new DynamicQuery('table');
-    String result = q.generateQuery().substringBetween('SELECT ', ' FROM');
-    System.assert(result.contains('Id'));
+    } catch (DynamicQuery.MalformattedQueryException e) {} // pass!
   }
 }
