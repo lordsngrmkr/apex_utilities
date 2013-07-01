@@ -11,7 +11,7 @@ Class that simplifies incrementally building dynamic SOQL queries.
 Example Usage:
 
 ```java
-List<User> users = new DynamicQuery('User').sel('ProfileId').whr('Name LIKE \'Nathan%\').lim(1).execute();
+List<User> users = new DynamicQuery('User').sel('ProfileId').whr('Name LIKE \'Nathan%\'').lim(1).execute();
 ```
 
 
