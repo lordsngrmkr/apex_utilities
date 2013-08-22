@@ -1,8 +1,15 @@
 #!/bin/bash
 
 function pretty_print {
-  echo "$1:"
-  echo "$2" |
+  files=`parse_diffs "$2"`
+  if [[ $files ]]; then
+    echo "$1:"
+    echo "$files"
+  fi
+}
+
+function parse_diffs {
+  echo "$1" |
   while read line; do
     if [[ $line ]]; then # skip blank lines
       if [[ $line =~ Files ]]; then
@@ -14,10 +21,8 @@ function pretty_print {
   $line"
       fi
     fi
-    if [[ $unk ]]; then
-      echo "unknowns:
+    [[ $unk ]] && echo "unknowns:
   $unk"
-    fi
   done
 }
 
