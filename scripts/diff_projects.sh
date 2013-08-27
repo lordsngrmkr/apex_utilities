@@ -27,15 +27,19 @@ function parse_diffs {
 }
 
 function print_from_differ {
+  #echo "  `echo "$1" |
+           #cut -d '/' -f4 |
+           #cut -d ' ' -f1`"
   echo "  `echo "$1" |
-           cut -d '/' -f4 |
-           cut -d ' ' -f1`"
+           grep -o "[^/ ]\+/src/.*" |
+           cut -d ' ' -f1 |
+           cut -d/ -f4`"
 }
 
 function print_from_only {
   echo "  `echo "$1" |
            cut -d ' ' -f4` (only in `echo "$1" |
-           cut -d ' ' -f3 |
+           grep -o "[^/ ]\+/src/.*" |
            cut -d '/' -f1`)"
 }
 
