@@ -18,13 +18,14 @@ function delete_project_components {
 
 function place_fake_class {
 	fake_class_filepath="/home/nwallace/.vim/bundle/sfdc/A-ProjectTemplate/src/classes/A-Fake-Class.cls"
-	mkdir "$1/src/classes" && cp $fake_class_filepath "$_"
+	mkdir "$1/classes" && cp $fake_class_filepath "$_"
 }
 
 function main {
-	verify_deletion "$1"
-	delete_project_components "$1/src"
-	place_fake_class "$1"
+	path="`realpath "$1"`"
+	verify_deletion "$path"
+	delete_project_components "$path/src"
+	place_fake_class "$path/src"
 }
 
 main "$@"
