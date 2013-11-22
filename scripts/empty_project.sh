@@ -4,7 +4,8 @@ set -e
 
 function verify_deletion {
 	# check for git changes or no git repo
-	echo "You are about to remove all apex components within `realpath "$1"`"
+	echo "You are about to remove the following directories within `realpath "$1"`"
+	find_dirs "$1/src"
 	read -rp "Are you sure you want to proceed? (y/n) " response
 	echo
 	if [[ ! $response =~ ^[Yy]$ ]]; then
@@ -12,8 +13,14 @@ function verify_deletion {
 	fi
 }
 
+find_dirs() {
+	find "$1" -type d -printf '%P\n' |
+	sort -u |
+	grep "^\w" # exclude hidden directories (i.e. .git, .svn...)
+}
+
 function delete_project_components {
-	rm -rf "$1"/classes "$1"/components "$1"/labels "$1"/pages "$1"/staticresources "$1"/triggers 
+	rm -rfv `find_dirs "$1" | xargs realpath | xargs`
 }
 
 function place_fake_class {
