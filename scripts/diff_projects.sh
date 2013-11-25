@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function pretty_print {
+pretty_print() {
   files=`parse_diffs "$2"`
   if [[ $files ]]; then
     echo "$1:"
@@ -8,7 +8,7 @@ function pretty_print {
   fi
 }
 
-function parse_diffs {
+parse_diffs() {
   echo "$1" |
   while read line; do
     if [[ $line ]]; then # skip blank lines
@@ -26,21 +26,21 @@ function parse_diffs {
   done
 }
 
-function print_from_differ {
+print_from_differ() {
   echo "  `echo "$1" |
            grep -o "[^/ ]\+/src/.*" |
            cut -d ' ' -f1 |
            cut -d/ -f4`"
 }
 
-function print_from_only {
+print_from_only() {
   echo "  `echo "$1" |
            cut -d ' ' -f4` (only in `echo "$1" |
            grep -o "[^/ ]\+/src/.*" |
            cut -d '/' -f1`)"
 }
 
-function main {
+main() {
   dirs_a=( classes pages triggers components )
   for i in "${dirs_a[@]}"; do
     result=`diff -qbrx '*-meta.xml' "$1/src/$i" "$2/src/$i"`

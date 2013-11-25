@@ -1,10 +1,10 @@
 #!/bin/bash
 
-function get_queries {
+get_queries() {
   grep SOQL_EXECUTE_BEGIN $1 | grep -io "select .*"
 }
 
-function get_lines_with_counts {
+get_lines_with_counts() {
   echo "$1" |
   sort -u |
   while read line; do
@@ -13,7 +13,7 @@ function get_lines_with_counts {
   done
 }
 
-function make_greppable {
+make_greppable() {
   echo "$1" |
   cut -d ' ' -f2- |
   sed "s/\(IN\|=\)\s\+\((\)\?:tmpVar[0-9]\+/.*/g" |
@@ -21,7 +21,7 @@ function make_greppable {
   sed "s/\s/\\\s\\\+/g"
 }
 
-function main {
+main() {
   queries="`get_queries $1`"
   echo "`get_lines_with_counts "$queries"`" | sort -r |
   while read line; do
